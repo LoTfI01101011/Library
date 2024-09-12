@@ -1,17 +1,12 @@
 package main
 
 import (
-	"log"
-
+	"github.com/LoTfI01101011/go_blog/initial"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	initial.ConnectToDb()
 }
 
 func main() {
