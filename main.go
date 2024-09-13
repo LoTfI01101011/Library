@@ -14,5 +14,8 @@ func main() {
 	r := gin.Default()
 	r.POST("/book", controllers.CreateBook)
 	r.GET("/book", controllers.GetBooks)
+	r.GET("/book/:id", controllers.GetBookById)
+	r.PATCH("/book/:id", controllers.UpdateBook)
+	r.DELETE("/book/:id", controllers.DeleteBook)
 	r.Run()
 }

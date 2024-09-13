@@ -1,11 +1,19 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"database/sql"
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Book struct {
-	Id          uuid.UUID
+	ID          uuid.UUID
 	Title       string
 	Author      string
 	Pages       int
 	Description string
+	ActivatedAt sql.NullTime // Uses sql.NullTime for nullable time fields
+	CreatedAt   time.Time    // Automatically managed by GORM for creation time
+	UpdatedAt   time.Time
 }
