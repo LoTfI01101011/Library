@@ -17,10 +17,14 @@ func CreateBook(c *gin.Context) {
 	}
 	//get data from the request body
 	c.Bind(&body)
-
+	user, ok := c.Get("user")
+	if !ok {
+		c.AbortWithStatus(404)
+	}
+	User := user.(models.User)
 	// create a book
 	id, _ := uuid.NewV7()
-	book := models.Book{ID: id, Title: body.Title, Author: body.Author, Pages: int(body.Pages), Description: body.Description}
+	book := models.Book{ID: id, UserID: User.ID, Title: body.Title, Author: body.Author, Pages: int(body.Pages), Description: body.Description}
 	result := initial.DB.Create(&book)
 	if result.Error != nil {
 		c.Status(400)

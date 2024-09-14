@@ -7,14 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
-type Book struct {
+type User struct {
 	ID          uuid.UUID
-	UserID      uuid.UUID
-	User        User
-	Title       string
-	Author      string
-	Pages       int
-	Description string
+	Email       string `gorm:"unique"`
+	Password    string
 	ActivatedAt sql.NullTime // Uses sql.NullTime for nullable time fields
 	CreatedAt   time.Time    // Automatically managed by GORM for creation time
 	UpdatedAt   time.Time
