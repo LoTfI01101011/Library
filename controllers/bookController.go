@@ -5,6 +5,7 @@ import (
 	"github.com/LoTfI01101011/go_blog/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func CreateBook(c *gin.Context) {
@@ -17,6 +18,7 @@ func CreateBook(c *gin.Context) {
 	}
 	//get data from the request body
 	c.Bind(&body)
+	//get the user from the token
 	user, ok := c.Get("user")
 	if !ok {
 		c.AbortWithStatus(404)
@@ -30,6 +32,10 @@ func CreateBook(c *gin.Context) {
 		c.Status(400)
 		return
 	}
+	//reload the book with the associate user
+	initial.DB.Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID", "Email")
+	}).First(&book, book.ID)
 	//returning the instance
 	c.JSON(200, gin.H{
 		"book": book,

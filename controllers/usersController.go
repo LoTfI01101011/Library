@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/LoTfI01101011/go_blog/initial"
@@ -10,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,7 +23,10 @@ func GenerateToken(userID uuid.UUID) (string, error) {
 	})
 	return token.SignedString([]byte(os.Getenv("Secret")))
 }
-
+func addTokenToBlacklist(token string, rdb *redis.Client, ctx context.Context) error {
+	_, err := rdb.Set(ctx, token, "blacklisted", time.Hour*24).Result()
+	return err
+}
 func SignUpUser(c *gin.Context) {
 	var body struct {
 		Email    string `json:"email" binding:"required,email"`
@@ -94,4 +100,18 @@ func LoginUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"token": token,
 	})
+}
+func Logout(c *gin.Context) {
+	token := c.GetHeader("Authorization")
+	token = strings.TrimPrefix(token, "Bearer ")
+
+	err := addTokenToBlacklist(token, initial.Rdb, initial.Ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err,
+		})
+		return
+	}
+	c.Status(200)
+
 }

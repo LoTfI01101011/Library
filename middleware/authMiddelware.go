@@ -10,7 +10,6 @@ import (
 	"github.com/LoTfI01101011/go_blog/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 func AuthMiddelware(c *gin.Context) {
@@ -20,6 +19,12 @@ func AuthMiddelware(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 	}
 	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	//check in blackedlist
+	isBlacklisted, err := initial.Rdb.Get(initial.Ctx, tokenString).Result()
+	if err == nil && isBlacklisted == "blacklisted" {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 	//decode/validate it
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 
@@ -35,8 +40,8 @@ func AuthMiddelware(c *gin.Context) {
 		}
 		//get the user from the db with token sub
 		var user models.User
-		initial.DB.First(&user, claims["sub"])
-		if user.ID == uuid.Nil {
+		err := initial.DB.Where("id = ?", claims["sub"]).Find(&user).Error
+		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 		//set the user

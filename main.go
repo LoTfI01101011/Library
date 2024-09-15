@@ -9,13 +9,16 @@ import (
 
 func init() {
 	initial.ConnectToDb()
+	initial.InitRedis()
 }
 
 func main() {
+
 	r := gin.Default()
 	//user
 	r.POST("/api/register", controllers.SignUpUser)
 	r.POST("/api/login", controllers.LoginUser)
+	r.POST("/api/logout", middleware.AuthMiddelware, controllers.Logout)
 	//book
 	r.POST("/api/book", middleware.AuthMiddelware, controllers.CreateBook)
 	r.GET("/api/book", middleware.AuthMiddelware, controllers.GetBooks)
