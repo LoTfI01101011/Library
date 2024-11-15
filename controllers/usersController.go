@@ -103,9 +103,10 @@ func LoginUser(c *gin.Context) {
 	})
 }
 func Logout(c *gin.Context) {
+	//geting the token from the header
 	token := c.GetHeader("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ")
-
+	//adding the token to the blacklist
 	err := addTokenToBlacklist(token, initial.Rdb, initial.Ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
