@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/LoTfI01101011/Library/initial"
 	"github.com/LoTfI01101011/Library/models"
 	"github.com/gin-gonic/gin"
@@ -9,39 +11,66 @@ import (
 )
 
 func CreateBook(c *gin.Context) {
-
 	var body struct {
-		Title       string `json:"Title"`
-		Author      string `json:"Author"`
-		Pages       int32  `json:"Pages"`
-		Description string `json:"Description"`
+		Title       string `json:"title"`
+		Author      string `json:"author"`
+		Pages       int32  `json:"pages"`
+		Description string `json:"description"`
 	}
-	//get data from the request body
-	c.Bind(&body)
-	//get the user from the token
-	user, ok := c.Get("user")
-	if !ok {
-		c.AbortWithStatus(404)
-	}
-	User := user.(models.User)
-	// create a book
-	id, _ := uuid.NewV7()
-	book := models.Book{ID: id, UserID: User.ID, Title: body.Title, Author: body.Author, Pages: int(body.Pages), Description: body.Description}
-	result := initial.DB.Create(&book)
-	if result.Error != nil {
-		c.Status(400)
+
+	// Bind request body and check for errors
+	if err := c.Bind(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
-	//reload the book with the associate user
+
+	// Get user from the token
+	user, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Safely assert user type
+	User, ok := user.(models.User)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve user information"})
+		return
+	}
+
+	// Generate a new UUID
+	id, err := uuid.NewV7()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate unique ID"})
+		return
+	}
+
+	// Create the book instance
+	book := models.Book{
+		ID:          id,
+		UserID:      User.ID,
+		Title:       body.Title,
+		Author:      body.Author,
+		Pages:       int(body.Pages),
+		Description: body.Description,
+	}
+
+	// Save to database
+	result := initial.DB.Create(&book)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create book"})
+		return
+	}
+
+	// Preload associated user and fetch the book
 	initial.DB.Preload("User", func(db *gorm.DB) *gorm.DB {
 		return db.Select("ID", "Email")
-	}).First(&book, book.ID)
-	//returning the instance
-	c.JSON(200, gin.H{
-		"book": book,
-	})
+	}).First(&book, "id = ?", book.ID)
 
+	// Return the created book
+	c.JSON(http.StatusOK, gin.H{"book": book})
 }
+
 func GetBooks(c *gin.Context) {
 	var books []models.Book
 

@@ -48,8 +48,13 @@ func SignUpUser(c *gin.Context) {
 	}
 	//creating the new user
 	id, _ := uuid.NewV7()
-	user := models.User{ID: id, Email: body.Email, Password: string(hash)}
-	initial.DB.Create(&user)
+	User := models.User{ID: id, Email: body.Email, Password: string(hash)}
+	err = initial.DB.Create(&User).Error
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "this credentials are already exist",
+		})
+	}
 	//generating the jwt token
 	token, err := GenerateToken(id)
 	if err != nil {
@@ -80,7 +85,6 @@ func LoginUser(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "The provided credentials are incorrect",
 		})
-		return
 	}
 	//comparing the two paaswords
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
@@ -98,7 +102,7 @@ func LoginUser(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"token": token,
 	})
 }
