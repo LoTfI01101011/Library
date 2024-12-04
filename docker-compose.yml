@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  backend:
+    build: .
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - PORT=${PORT}
+      - RedisPort=${RedisPort}
+      - User=${User}
+      - PASSWORD=${PASSWORD}
+      - DBNAME=${DBNAME}
+      - Secret=${Secret}
+      - GOOGLE_KEY=${GOOGLE_KEY}
+      - GOOGLE_SECRET=${GOOGLE_SECRET}
+      - DBHost=db
+    depends_on:
+      - redis
+      - db
+    restart: on-failure
+  redis:
+    image: 'redis'
+    ports:
+      - "6380:6379"
+  db:
+    image: 'postgres'
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: ${User}
+      POSTGRES_PASSWORD: ${PASSWORD}
+      POSTGRES_DB: ${DBNAME}
+    volumes:
+    - db-data:/keep
+volumes:
+  db-data:
+networks:
+  learning:
+    driver: bridge

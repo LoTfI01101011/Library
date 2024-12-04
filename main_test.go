@@ -3,7 +3,6 @@ package main_test
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -72,7 +71,6 @@ func loginAndGetToken(r *gin.Engine, t *testing.T) string {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	log.Println("kjdsljflsjflsjdfjlsdfjldsfskkkkkkkkkkkkkkkkkkkkkk")
 
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)

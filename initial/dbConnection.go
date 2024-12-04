@@ -16,7 +16,7 @@ func init() {
 func ConnectToDb() {
 
 	var err error
-	dsn := "host=localhost" + " user=" + os.Getenv("User") + " password=" + os.Getenv("PASSWORD") + " dbname=" + os.Getenv("DBNAME") + " port=5432 sslmode=disable "
+	dsn := "host=" + os.Getenv("DBHost") + " user=" + os.Getenv("User") + " password=" + os.Getenv("PASSWORD") + " dbname=" + os.Getenv("DBNAME") + " port=" + os.Getenv("PostgresPort") + " sslmode=disable "
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
