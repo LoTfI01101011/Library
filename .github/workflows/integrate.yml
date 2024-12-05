@@ -75,7 +75,7 @@ jobs:
 
       - name: Run migrations
         run: |
-          go run migrate/migrate.go
+          go run migrate/migrate.go migrate
 
       # Run tests
       - name: Run tests
