@@ -61,26 +61,22 @@ jobs:
             echo "Waiting for Redis..."
             sleep 5
           done
+      # Create .env file
+      - name: Create .env file
+        run: |
+          echo "PORT=8000" >> .env
+          echo "DBHost=localhost" >> .env
+          echo "RedisPort=6380" >> .env
+          echo "PostgresPort=5432" >> .env
+          echo "User=postgres" >> .env
+          echo "PASSWORD=123" >> .env
+          echo "DBNAME=library" >> .env
+          echo "Secret=543kl5jkl235ghg3j45jgf4ghfhgf45ivnmsaf" >> .env
 
       - name: Run migrations
-        env:
-          DBHost: localhost
-          PostgresPort: 5432
-          User: postgres
-          PASSWORD: 123
-          DBNAME: library
         run: |
           go run migrate/migrate.go
 
       # Run tests
       - name: Run tests
-        env:
-          PORT: 8000
-          DBHost: localhost
-          RedisPort: 6380
-          PostgresPort: 5432
-          User: postgres
-          PASSWORD: 123
-          DBNAME: library
-          Secret: 543kl5jkl235ghg3j45jgf4ghfhgf45ivnmsaf
         run: go test -v main_test.go
