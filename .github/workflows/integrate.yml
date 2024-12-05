@@ -1,0 +1,84 @@
+name: Library CI 
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 123
+          POSTGRES_DB: library
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.22.2
+
+      # Install dependencies
+      - name: Install dependencies
+        run: go mod tidy
+
+      # Wait for services
+      - name: Wait for PostgreSQL and Redis
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 5
+          done
+          until redis-cli -p 6380 ping; do
+            echo "Waiting for Redis..."
+            sleep 5
+          done
+
+      - name: Run migrations
+        env:
+          DBHost: localhost
+          PostgresPort: 5432
+          User: postgres
+          PASSWORD: 123
+          DBNAME: library
+        run: |
+          go run migrate/migrate.go
+
+      # Run tests
+      - name: Run tests
+        env:
+          PORT: 8000
+          DBHost: localhost
+          RedisPort: 6380
+          PostgresPort: 5432
+          User: postgres
+          PASSWORD: 123
+          DBNAME: library
+          Secret: 543kl5jkl235ghg3j45jgf4ghfhgf45ivnmsaf
+        run: go test -v main_test.go
