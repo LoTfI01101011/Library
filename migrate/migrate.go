@@ -12,9 +12,7 @@ func init() {
 }
 
 func main() {
-	if os.Args[1] == "migrate" {
-		initial.DB.AutoMigrate(&models.Book{})
-	}
+	initial.DB.AutoMigrate(&models.Book{})
 	if os.Args[1] == "fresh" {
 		initial.DB.Migrator().DropTable(&models.Book{})
 		initial.DB.AutoMigrate(&models.Book{})
