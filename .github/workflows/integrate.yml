@@ -47,7 +47,9 @@ jobs:
       # Install dependencies
       - name: Install dependencies
         run: go mod tidy
-
+      # Install redis ClI  
+      - name: Install Redis CLI
+        run: sudo apt-get update && sudo apt-get install -y redis-tools
       # Wait for services
       - name: Wait for PostgreSQL and Redis
         run: |
