@@ -38,6 +38,7 @@ func SignUpUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to read body",
 		})
+		return
 	}
 	//hash the password
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
@@ -45,6 +46,7 @@ func SignUpUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to hash the password",
 		})
+		return
 	}
 	//creating the new user
 	id, _ := uuid.NewV7()
@@ -54,6 +56,7 @@ func SignUpUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "this credentials are already exist",
 		})
+		return
 	}
 	//generating the jwt token
 	token, err := GenerateToken(id)
@@ -61,6 +64,7 @@ func SignUpUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "failed to create the token",
 		})
+		return
 	}
 	c.JSON(http.StatusCreated, gin.H{
 		"token": token,
@@ -85,6 +89,7 @@ func LoginUser(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "The provided credentials are incorrect",
 		})
+		return
 	}
 	//comparing the two paaswords
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
@@ -138,6 +143,7 @@ func CallbackAuthHundler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": err,
 		})
+		return
 	}
 	//generate the token
 	// userUUID, _ := uuid.Parse(user.UserID)

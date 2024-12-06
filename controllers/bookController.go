@@ -145,6 +145,7 @@ func DeleteBook(c *gin.Context) {
 		c.JSON(400, gin.H{
 			"error": err,
 		})
+		return
 	}
 
 	//delete it
